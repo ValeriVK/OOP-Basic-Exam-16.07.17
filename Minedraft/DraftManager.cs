@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Security.Principal;
 using System.Text;
 
 public class DraftManager
@@ -22,10 +21,9 @@ public class DraftManager
 
     public List<Harvester> Harvesters { get; set; }
     public List<Provider> Providers { get; set; }
-   
+
     public string RegisterHarvester(List<string> arguments)
     {
-
         try
         {
             Harvester harvester = HarvesterFactory.GetHarvester(arguments);
@@ -54,13 +52,13 @@ public class DraftManager
     }
     public string Day()
     {
-        this.summedEnergyOutput = Providers.Select(p => p.EnergyOutput).Sum();
+        this.summedEnergyOutput = this.Providers.Sum(p => p.EnergyOutput);
         this.totalStoredEnergy = this.totalStoredEnergy + this.summedEnergyOutput;
-        double summedEnergyRequirement = Harvesters.Select(h => h.EnergyRequirement).Sum()*this.koefModeEnergy;
+        double summedEnergyRequirement = this.Harvesters.Sum(h => h.EnergyRequirement) * this.koefModeEnergy;
 
         if (summedEnergyRequirement <= totalStoredEnergy)
         {
-            this.summedOreOutput = Harvesters.Select(h => h.OreOutput).Sum()*this.koefModeOre;
+            this.summedOreOutput = Harvesters.Sum(h => h.OreOutput) * this.koefModeOre;
             this.totalMinedOre += this.summedOreOutput;
             this.totalStoredEnergy -= summedEnergyRequirement;
         }
@@ -73,7 +71,7 @@ public class DraftManager
         return sb.ToString().Trim();
     }
     public string Mode(List<string> arguments)
-    {       
+    {
         switch (arguments[0])
         {
             case "Half":
@@ -95,21 +93,22 @@ public class DraftManager
                 }
                 break;
         }
-
         return $"Successfully changed working mode to {arguments[0]} Mode";
     }
     public string Check(List<string> arguments)
     {
         var id = arguments[0];
+        string result = $"No element found with id - {id}";
+
         if (Harvesters.Any(h => h.Id == id))
         {
-            return Harvesters.Where(h => h.Id == id).First().ToString().Trim();
+            result = Harvesters.Where(h => h.Id == id).First().ToString().Trim();
         }
-        else if (Providers.Any(p => p.Id == id))
+        if (Providers.Any(p => p.Id == id))
         {
-            return Providers.Where(p => p.Id == id).First().ToString().Trim();
+            result = Providers.Where(p => p.Id == id).First().ToString().Trim();
         }
-        return $"No element found with id - {id}";
+        return result;
     }
     public string ShutDown()
     {
@@ -120,5 +119,4 @@ public class DraftManager
 
         return sb.ToString().Trim();
     }
-
 }
